@@ -464,6 +464,19 @@ $("larger").addEventListener("click",function(){setSize(Number(document.document
 var savedTheme=load("ath-theme"); if(savedTheme==="light"||savedTheme==="dark") document.documentElement.setAttribute("data-theme",savedTheme);
 paintTheme(); setSize(Number(load("ath-size")||0));
 
+function showError(msg){$("tools").innerHTML="";var e=$("loadError");e.hidden=false;e.textContent=msg}
+function loadLib(cb){
+  if(typeof XLSX!=="undefined") return cb();
+  var urls=["https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js","https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"];
+  (function next(i){
+    if(i>=urls.length) return showError("The Excel reader could not be loaded. Check that xlsx_full_min.js is in the main folder of the repo, then reload.");
+    var s=document.createElement("script"); s.src=urls[i];
+    s.onload=function(){if(typeof XLSX!=="undefined") cb(); else next(i+1)};
+    s.onerror=function(){next(i+1)};
+    document.head.appendChild(s);
+  })(0);
+}
+function start(){
 Promise.all([
   getFile("tutorials.xlsx"),
   getFile("students.xlsx").catch(function(){return null})
@@ -482,6 +495,8 @@ Promise.all([
   var e=$("loadError"); e.hidden=false;
   e.textContent="The tutorials could not be loaded ("+err.message+"). Open this page from its website address, not from a saved file, and check that tutorials.xlsx is in the main folder of the repo.";
 });
+}
+loadLib(start);
 </script>
 </body>
 </html>
